@@ -1,0 +1,8 @@
+.idea
+.vscode
+.env
+apikey.md
+__pycache__/
+*.py[cod]
+*$py.class
+ build/
