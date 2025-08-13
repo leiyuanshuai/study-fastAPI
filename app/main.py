@@ -34,6 +34,8 @@ add_origin_sql_query_route(app, prefix="/test_origin_sql_query")
 
 add_langgraph_route(app)
 add_lg_approve_route(app)
+
+# 下面这个是作业提交接口
 add_langgraph_approve_route(app)
 # 测试批量生成接口
 # create_model_service(

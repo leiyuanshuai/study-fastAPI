@@ -231,7 +231,7 @@ def create_model_service(
         await after_query_list(query_cls_list, has_next, query_param, session)
 
       # 返回处理后的结果列表和是否有下一页的标识
-      return (query_cls_list, has_next, total)
+      return query_cls_list, has_next, total
 
     # 单条查询工具方法：根据条件查询单条记录
     async def query_item(self, session: AsyncSessionDep, row_dict: dict = Body(..., description=f"查询数据的字段筛选值，字段参考{Cls.__name__}")):

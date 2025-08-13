@@ -20,7 +20,7 @@ from app.utils.postgres_checkpointer import AsyncPostgresSaverDep
 
 def add_langgraph_approve_route(app: FastAPI):
   # 提交审批单/创建报销单
-  @app.post("/lg_approve/submit")
+  @app.post("/lg_approve/submit", tags=['/lg_approve'])
   async def lg_approve_submit(
     row_dict: dict,
     checkpointer: AsyncPostgresSaverDep,
@@ -31,13 +31,13 @@ def add_langgraph_approve_route(app: FastAPI):
     config = {"configurable": {"thread_id": thread_id}}
     print('/lg_approve/submit', row_dict)
     graph_state = await graph.ainvoke({"input_remarks": row_dict.get('remarks')}, config=config)
-    print(graph_state)
+    print('/lg_approve/submit:', graph_state)
     return graph_state
 
-  @app.get("/lg_message/feedback/{thread_id}/{approve_flag}")
+  @app.get("/lg_message/feedback/{thread_id}/{approve_flag}", tags=['/lg_approve'])
   async def lg_message_feedback(
     thread_id: str,
-    approve_flag: str,
+    approve_flag: Literal['Y', 'N'],
     checkpointer: AsyncPostgresSaverDep,
     session: AsyncSessionDep,
   ):
@@ -73,11 +73,14 @@ def create_graph(
   # 创建报销单（审批单）
   async def node_create_approve(state: StateSchema):
     insert_approve_dict = {
-      "status": "pending_approval",
+      "status": "pending_approval", # 待审批状态
       "result_content": '待审批......',
       "remarks": state.get('input_remarks'),
     }
+    # LgApproveService.item_insert()
     insert_approve_cls = await LgApproveService.item_insert(session=session, row_dict=insert_approve_dict)
+    print('insert_approve_cls:', insert_approve_cls)
+
     return {
       "approve": insert_approve_cls.model_dump(),
       "log_list": [f"node_create_approve：创建报销单[{insert_approve_cls.id}]"]
@@ -111,7 +114,7 @@ def create_graph(
     }
 
     insert_message_cls = await LgMessageService.item_insert(session=session, row_dict=insert_message_dict)
-
+    print('insert_message_cls:', insert_message_cls)
     return {
       "log_list": [f"node_create_message：创建审批消息，待商机主管「XXX」审批"],
       "lg_message_list": [insert_message_cls.model_dump()],
@@ -131,7 +134,7 @@ def create_graph(
     }
     update_message_cls = await LgMessageService.item_update(session=session, row_dict=update_message_dict)
     update_message_dict = update_message_cls.model_dump()
-
+    print('update_message_cls:', update_message_cls)
     if approve_flag == 'Y':
       return Command(
         goto="node_approve_accept",
@@ -157,6 +160,7 @@ def create_graph(
       "result_content": '审批通过......',
     }
     update_approve_cls = await LgApproveService.item_update(session=session, row_dict=update_approve_dict)
+    print('node_approve_accept:', update_approve_cls)
     return {
       "approve": update_approve_cls.model_dump(),
       "log_list": [f"node_approve_accept：审批通过，等待财务打款"],
@@ -170,6 +174,7 @@ def create_graph(
       "result_content": '审批拒绝......',
     }
     update_approve_cls = await LgApproveService.item_update(session=session, row_dict=update_approve_dict)
+    print('node_approve_reject:', update_approve_cls)
     return {
       "approve": update_approve_cls.model_dump(),
       "log_list": [f"node_approve_accept：审批已经被拒绝"],
