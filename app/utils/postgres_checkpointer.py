@@ -31,22 +31,33 @@ class PostgresCheckpointerManager:
 
   @staticmethod
   async def get_instance() -> AsyncPostgresSaver:
-    is_connection_alive = await PostgresCheckpointerManager.is_connection_alive()
-    if not is_connection_alive:
-
+    # 使用双重检查锁定模式确保线程安全
+    if not await PostgresCheckpointerManager.is_connection_alive():
       # 使用异步锁确保并发安全
       async with PostgresCheckpointerManager._lock:
-        if PostgresCheckpointerManager._instance:
-          await PostgresCheckpointerManager.close_instance()
+        # 双重检查，防止在等待锁期间实例已被创建
+        if not await PostgresCheckpointerManager.is_connection_alive():
+          if PostgresCheckpointerManager._instance:
+            # 添加异常处理，防止在关闭旧连接时出错
+            try:
+              await PostgresCheckpointerManager.close_instance()
+            except Exception as e:
+              print(f"Error closing previous instance: {e}")
+              # 即使关闭出错，也要确保实例被重置
+              PostgresCheckpointerManager._instance = None
+              PostgresCheckpointerManager._context_manger = None
+              PostgresCheckpointerManager._graph = None
 
-        # 从连接字符串创建AsyncPostgresSaver上下文管理器
-        PostgresCheckpointerManager._context_manger = AsyncPostgresSaver.from_conn_string(POSTGRES_DATABASE_URL)
-        # 进入异步上下文，初始化数据库连接
-        PostgresCheckpointerManager._instance = await PostgresCheckpointerManager._context_manger.__aenter__()
-        # 创建用来测试连接是否有效的图
-        PostgresCheckpointerManager._graph = create_test_graph(PostgresCheckpointerManager._instance)
-        # 打印调试信息
-        print("Create AsyncPostgresSaver:", PostgresCheckpointerManager._instance)
+          # 从连接字符串创建AsyncPostgresSaver上下文管理器
+          PostgresCheckpointerManager._context_manger = AsyncPostgresSaver.from_conn_string(POSTGRES_DATABASE_URL)
+          # 进入异步上下文，初始化数据库连接
+          PostgresCheckpointerManager._instance = await PostgresCheckpointerManager._context_manger.__aenter__()
+          # 创建用来测试连接是否有效的图
+          PostgresCheckpointerManager._graph = create_test_graph(PostgresCheckpointerManager._instance)
+          # 打印调试信息
+          print("Create AsyncPostgresSaver:", PostgresCheckpointerManager._instance)
+          # 重置检查时间
+          PostgresCheckpointerManager._last_check_time = time.time()
 
     # 返回单例实例
     return PostgresCheckpointerManager._instance
@@ -74,8 +85,8 @@ class PostgresCheckpointerManager:
     if PostgresCheckpointerManager._instance is None:
       return False
 
-    # 检测间隔小于60秒，直接返回True
-    if time.time() - PostgresCheckpointerManager._last_check_time < 60:
+    # 缩短检测间隔到30秒，更快地检测连接问题
+    if time.time() - PostgresCheckpointerManager._last_check_time < 30:
       return True
 
     try:
@@ -85,6 +96,8 @@ class PostgresCheckpointerManager:
       return True
     except Exception as e:
       print(f"Postgres connection check failed: {e}")
+      # 检测失败时重置最后检查时间，确保下次强制检查
+      PostgresCheckpointerManager._last_check_time = time.time()
       return False
 
 
