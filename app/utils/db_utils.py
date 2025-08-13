@@ -21,10 +21,11 @@ DATABASE_URL = f"mysql+asyncmy://{env.db_username}:{env.db_password}@{env.db_hos
 async_engine = AsyncEngine(create_engine(
   DATABASE_URL,
   poolclass=AsyncAdaptedQueuePool,  # 使用异步适配的队列池
-  pool_size=5,  # 连接池保持的连接数
-  max_overflow=10,  # 允许超过pool_size的最大连接数
-  pool_timeout=30,  # 获取连接的超时时间(秒)
-  pool_recycle=3600,  # 连接回收时间(秒)
+  pool_size=10,  # 连接池保持的连接数
+  max_overflow=20,  # 允许超过pool_size的最大连接数
+  pool_timeout=60,  # 获取连接的超时时间(秒)
+  pool_recycle=300,  # 连接回收时间(秒)
+  pool_pre_ping=True,  # 预检查连接是否可用，防止连接断开
   echo=True,  # 启用SQL语句日志输出，便于开发调试
   future=True,  # 启用SQLAlchemy 2.0风格的未来模式API
 ))
