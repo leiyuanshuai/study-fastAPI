@@ -4,13 +4,13 @@ from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html, get_redoc_html
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from app.config.env import env
 
 
-from app.utils.db_utils import check_database_connection, check_postgres_connection
+from app.utils.db_utils import check_database_connection
+from app.utils.postgres_checkpointer import check_postgres_connection
 
 
 def create_app():

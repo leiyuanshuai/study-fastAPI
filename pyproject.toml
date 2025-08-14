@@ -25,6 +25,8 @@ pyjwt = "^2.10.1"
 python-multipart = "^0.0.20"
 langgraph-checkpoint-postgres = "^2.0.23"
 langgraph = "^0.6.4"
+langchain = "^0.3.27"
+requests = "^2.32.4"
 
 
 [tool.poetry.group.dev.dependencies]

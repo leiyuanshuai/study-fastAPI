@@ -3,11 +3,11 @@ from operator import add
 from typing import TypedDict, Annotated, List
 
 from fastapi import FastAPI, Depends
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
-from app.utils.db_utils import aopen_postgres_checkpointer, AsyncPostgresSaverDep
+from app.utils.postgres_checkpointer import AsyncPostgresSaverDep
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 def add_langgraph_route(app: FastAPI):
   @app.get("/langgraph/invoke")
