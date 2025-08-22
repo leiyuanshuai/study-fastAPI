@@ -43,7 +43,7 @@ add_depends_router(app, prefix="/depends")
 add_origin_sql_query_route(app, prefix="/test_origin_sql_query")
 
 # 添加Redis路由
-add_redis_route(app)
+add_redis_route(app, prefix="/redis")
 
 LgChatService.add_route(app=app, path="/lg_chat")
 

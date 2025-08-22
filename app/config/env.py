@@ -13,10 +13,10 @@ class Settings(BaseSettings):
   db_database: str = Field(..., env="DB_DATABASE")
 
   # redis
-  redis_db_host: str = Field(..., env="REDIS_HOST")
-  redis_db_port: str = Field(..., env="REDIS_PORT")
-  redis_db_password: str = Field(..., env="REDIS_PASSWORD")
-  redis_db_number: str = Field(..., env="REDIS_DB_NUMBER")
+  redis_db_host: str = Field(..., env="REDIS_DB_HOST")
+  redis_db_port: str = Field(..., env="REDIS_DB_PORT")
+  redis_db_password: str = Field(..., env="REDIS_DB_PASSWORD")
+  redis_db_number: int = Field(default=0, env="REDIS_DB_NUMBER")
 
   pg_db_host: str = Field(..., env="PG_DB_HOST")
   pg_db_port: str = Field(..., env="PG_DB_PORT")

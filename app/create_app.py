@@ -7,10 +7,9 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
 from app.config.env import env
-
-
 from app.utils.db_utils import check_database_connection
 from app.utils.postgres_checkpointer import check_postgres_connection
+from app.utils.redis_utils import check_redis_connection, RedisManager
 
 
 def create_app():
@@ -19,9 +18,11 @@ def create_app():
     print("lifespan：应用启动阶段")
     async_engine = await check_database_connection()
     await check_postgres_connection()
+    await check_redis_connection()
     yield
     print("lifespan：应用销毁阶段")
     await async_engine.dispose()
+    await RedisManager.close_instance()
   async def verify_token(x_token: Annotated[str, Header()]):
       if x_token != "fake-super-secret-token":
         raise HTTPException(status_code=400, detail="X-Token header invalid")
