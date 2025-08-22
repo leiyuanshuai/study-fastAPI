@@ -3,6 +3,7 @@ from langchain_core.runnables import RunnableLambda
 from langserve import add_routes
 from app.config.env import env
 from app.controller.add_langgraph_route import add_langgraph_route
+from app.controller.add_redis_route import add_redis_route
 from app.controller.add_user_route import add_user_route
 from app.create_app import create_app
 from app.middlewares.app_middlewares import add_app_middlewares
@@ -40,6 +41,9 @@ add_user_route(app, prefix="/user")
 add_depends_router(app, prefix="/depends")
 # 测试原生SQL查询
 add_origin_sql_query_route(app, prefix="/test_origin_sql_query")
+
+# 添加Redis路由
+add_redis_route(app)
 
 LgChatService.add_route(app=app, path="/lg_chat")
 

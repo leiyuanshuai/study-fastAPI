@@ -12,6 +12,12 @@ class Settings(BaseSettings):
   db_password: str = Field(..., env="DB_PASSWORD")
   db_database: str = Field(..., env="DB_DATABASE")
 
+  # redis
+  redis_db_host: str = Field(..., env="REDIS_HOST")
+  redis_db_port: str = Field(..., env="REDIS_PORT")
+  redis_db_password: str = Field(..., env="REDIS_PASSWORD")
+  redis_db_number: str = Field(..., env="REDIS_DB_NUMBER")
+
   pg_db_host: str = Field(..., env="PG_DB_HOST")
   pg_db_port: str = Field(..., env="PG_DB_PORT")
   pg_db_username: str = Field(..., env="PG_DB_USERNAME")
