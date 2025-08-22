@@ -22,14 +22,6 @@ def create_app():
     yield
     print("lifespan：应用销毁阶段")
     await async_engine.dispose()
-  async def verify_token(x_token: Annotated[str, Header()]):
-      if x_token != "fake-super-secret-token":
-        raise HTTPException(status_code=400, detail="X-Token header invalid")
-
-  async def verify_key(x_key: Annotated[str, Header()]):
-    if x_key != "fake-super-secret-key":
-      raise HTTPException(status_code=400, detail="X-Key header invalid")
-    return x_key
 
   app = FastAPI(
     docs_url=None,  # 禁用默认 Swagger
